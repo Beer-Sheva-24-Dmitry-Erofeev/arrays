@@ -2,17 +2,16 @@ package telran.util.test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import static telran.util.Arrays.addElementToTheEnd;
+import static telran.util.Arrays.binarySearch;
 import static telran.util.Arrays.insert;
 import static telran.util.Arrays.insertAndKeepSorted;
-import static telran.util.Arrays.isOneSwapToSorted;
 import static telran.util.Arrays.remove;
 import static telran.util.Arrays.searchBinary;
 import static telran.util.Arrays.searchLinear;
+import static telran.util.Arrays.sort;
 import static telran.util.Arrays.sortBubble;
 
 ;
@@ -96,7 +95,8 @@ public class ArraysTest {
         assertArrayEquals(expectedArray, insertAndKeepSorted(testArrayInsert, numberToInsert));
     }
 
-    @Test
+        //TODO
+    /*@Test
     // {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     void isOneSwapToSortedTest() {
         // First two swapped, 1 bump
@@ -114,6 +114,38 @@ public class ArraysTest {
         // Two neighbours swapped, 1 bump
         int[] testArrayTrue3 = {1, 2, 3, 4, 6, 5, 7, 8, 9, 10};
         assertTrue(isOneSwapToSorted(testArrayTrue3));
-        //TODO
+    }
+        */
+
+    @Test
+    void sortAnyTypeTest() {
+        String [] testStrings = {"lmn", "cfta", "w", "aa" };
+        String [] expectedASCII = {"aa", "cfta", "lmn", "w"};
+        String [] expectedLength = {"w", "aa", "lmn", "cfta"};
+        sort(testStrings, new ComparatorASCII());
+        assertArrayEquals(expectedASCII, testStrings);
+        sort(testStrings, new ComparatorLength());
+        assertArrayEquals(expectedLength, testStrings);
+    }
+
+    @Test
+    void binarySearchAnyTypeTest() {
+        String [] testASCII = {"aa", "cfta", "lmn", "w"};
+        assertEquals(0, binarySearch(testASCII, "aa", new ComparatorASCII()));
+        assertEquals(3, binarySearch(testASCII, "w", new ComparatorASCII()));
+        assertEquals(1, binarySearch(testASCII, "cfta", new ComparatorASCII()));
+        assertEquals(-3, binarySearch(testASCII, "z", new ComparatorASCII()));
+
+        String [] testLength = {"w", "aa", "lmn", "cfta"};
+        assertEquals(0, binarySearch(testLength, "w", new ComparatorLength()));
+        assertEquals(3, binarySearch(testLength, "cfta", new ComparatorLength()));
+        assertEquals(1, binarySearch(testLength, "aa", new ComparatorLength()));
+        assertEquals(0, binarySearch(testLength, "z", new ComparatorLength()));
+
+        Integer [] testIntegers = {-7, -4, 0, 1, 1, 5, 69};
+        assertEquals(0, binarySearch(testIntegers, -7, new ComparatorInteger()));
+        assertEquals(6, binarySearch(testIntegers, 69, new ComparatorInteger()));
+        assertEquals(2, binarySearch(testIntegers, 0, new ComparatorInteger()));
+        assertEquals(-4, binarySearch(testIntegers, 2, new ComparatorInteger()));
     }
 }

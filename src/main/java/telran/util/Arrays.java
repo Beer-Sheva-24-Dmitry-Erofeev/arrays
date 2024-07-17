@@ -1,8 +1,11 @@
 package telran.util;
 
+import java.util.Comparator;
+
 public class Arrays {
 
     // Method searches for a given number in the array and outputs it's index
+    // Complexity of this method is O(n).
     public static int searchLinear(int[] ar, int numberToFind) {
         int index = 0;
         while (index < ar.length && numberToFind != ar[index]) {
@@ -114,7 +117,7 @@ public class Arrays {
 
         return resultingArray;
     }
-
+    /*
     public static boolean isOneSwapToSorted(int[] array) {
         boolean result = false;
         int amountOfBumps = 0;
@@ -152,5 +155,44 @@ public class Arrays {
         }
         return result;
 
+    }
+    */
+
+    public static <T> void sort(T[] array, Comparator<T> comparator) {
+        int length = array.length;
+        boolean flSorted = false;
+        do {
+            length--;
+            flSorted = true;
+            for (int i = 0; i < length; i++) {
+                if (comparator.compare(array[i], array[i + 1]) > 0) {
+                    swap(array, i, i + 1);
+                    flSorted = false;
+                }
+            }
+        } while (!flSorted);
+    }
+
+    private static <T> void swap(T[] array, int i, int j) {
+        T tmp = array[i];
+        array[i] = array[j];
+        array[j] = tmp;
+    }
+
+    public static <T> int binarySearch(T[] array, T key, Comparator<T> comp) {
+
+        int start = 0;
+        int end = array.length - 1;
+        int mid = (start + end) / 2;
+
+        while (start <= end && comp.compare(key, array[mid]) != 0) {
+            if (comp.compare(key, array[mid]) < 0) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+            mid = (start + end) / 2;
+        }
+        return start > end ? -(start - 1) : mid;
     }
 }
