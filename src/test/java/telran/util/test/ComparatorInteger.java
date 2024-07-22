@@ -2,7 +2,6 @@ package telran.util.test;
 
 import java.util.Comparator;
 
-
 public class ComparatorInteger implements Comparator<Integer> {
 
     @Override

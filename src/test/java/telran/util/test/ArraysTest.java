@@ -6,13 +6,17 @@ import org.junit.jupiter.api.Test;
 
 import static telran.util.Arrays.addElementToTheEnd;
 import static telran.util.Arrays.binarySearch;
+import static telran.util.Arrays.find;
 import static telran.util.Arrays.insert;
 import static telran.util.Arrays.insertAndKeepSorted;
 import static telran.util.Arrays.remove;
+import static telran.util.Arrays.removeIf;
 import static telran.util.Arrays.searchBinary;
 import static telran.util.Arrays.searchLinear;
 import static telran.util.Arrays.sort;
 import static telran.util.Arrays.sortBubble;
+
+;
 
 ;
 
@@ -95,7 +99,6 @@ public class ArraysTest {
         assertArrayEquals(expectedArray, insertAndKeepSorted(testArrayInsert, numberToInsert));
     }
 
-        //TODO
     /*@Test
     // {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     void isOneSwapToSortedTest() {
@@ -115,13 +118,12 @@ public class ArraysTest {
         int[] testArrayTrue3 = {1, 2, 3, 4, 6, 5, 7, 8, 9, 10};
         assertTrue(isOneSwapToSorted(testArrayTrue3));
     }
-        */
-
+     */
     @Test
     void sortAnyTypeTest() {
-        String [] testStrings = {"lmn", "cfta", "w", "aa" };
-        String [] expectedASCII = {"aa", "cfta", "lmn", "w"};
-        String [] expectedLength = {"w", "aa", "lmn", "cfta"};
+        String[] testStrings = {"lmn", "cfta", "w", "aa"};
+        String[] expectedASCII = {"aa", "cfta", "lmn", "w"};
+        String[] expectedLength = {"w", "aa", "lmn", "cfta"};
         sort(testStrings, new ComparatorASCII());
         assertArrayEquals(expectedASCII, testStrings);
         sort(testStrings, new ComparatorLength());
@@ -130,22 +132,63 @@ public class ArraysTest {
 
     @Test
     void binarySearchAnyTypeTest() {
-        String [] testASCII = {"aa", "cfta", "lmn", "w"};
+        String[] testASCII = {"aa", "cfta", "lmn", "w"};
         assertEquals(0, binarySearch(testASCII, "aa", new ComparatorASCII()));
         assertEquals(3, binarySearch(testASCII, "w", new ComparatorASCII()));
         assertEquals(1, binarySearch(testASCII, "cfta", new ComparatorASCII()));
-        assertEquals(-3, binarySearch(testASCII, "z", new ComparatorASCII()));
+        assertEquals(-5, binarySearch(testASCII, "z", new ComparatorASCII()));
 
-        String [] testLength = {"w", "aa", "lmn", "cfta"};
-        assertEquals(0, binarySearch(testLength, "w", new ComparatorLength()));
-        assertEquals(3, binarySearch(testLength, "cfta", new ComparatorLength()));
-        assertEquals(1, binarySearch(testLength, "aa", new ComparatorLength()));
-        assertEquals(0, binarySearch(testLength, "z", new ComparatorLength()));
+        String[] testLength = {"w", "aa", "lmn", "cfta"};
+        assertEquals(0, binarySearch(testLength, "y", new ComparatorLength()));
+        assertEquals(3, binarySearch(testLength, "    ", new ComparatorLength()));
+        assertEquals(1, binarySearch(testLength, "xx", new ComparatorLength()));
+        assertEquals(2, binarySearch(testLength, "zzz", new ComparatorLength()));
+        assertEquals(-5, binarySearch(testLength, "     ", new ComparatorLength()));
 
-        Integer [] testIntegers = {-7, -4, 0, 1, 1, 5, 69};
+        Integer[] testIntegers = {-7, -4, 0, 1, 1, 5, 69};
         assertEquals(0, binarySearch(testIntegers, -7, new ComparatorInteger()));
         assertEquals(6, binarySearch(testIntegers, 69, new ComparatorInteger()));
         assertEquals(2, binarySearch(testIntegers, 0, new ComparatorInteger()));
-        assertEquals(-4, binarySearch(testIntegers, 2, new ComparatorInteger()));
+        assertEquals(-6, binarySearch(testIntegers, 2, new ComparatorInteger()));
+    }
+
+    @Test
+    void binarySearchNoComparatorTest() {
+        String[] testASCII = {"aa", "cfta", "lmn", "w"};
+        Person prs1 = new Person(10, "Vasia");
+        Person prs2 = new Person(20, "Itay");
+        Person prs3 = new Person(30, "Sara");
+        Person[] persons = {
+            prs1, prs2, prs3
+        };
+        assertEquals(1, binarySearch(testASCII, "cfta"));
+        assertEquals(-2, binarySearch(testASCII, "aaa"));
+        assertEquals(0, binarySearch(persons, prs1));
+        assertEquals(1, binarySearch(persons, prs2));
+        assertEquals(2, binarySearch(persons, prs3));
+        assertEquals(-1, binarySearch(persons, new Person(5, "Serg")));
+    }
+
+    @Test
+    // Здесь мы тестируем компаратор EvenOdd в методе sort
+    void evenOddSortingTest() {
+        Integer[] array = {7, -8, 10, -100, 13, -10, 99};
+        Integer[] expected = {-100, -10, -8, 10, 99, 13, 7};
+        sort(array, new EvenOddComparator());
+        assertArrayEquals(expected, array);
+    }
+
+    @Test
+    void findTest() {
+        Integer[] array = {7, -8, 10, -100, 13, -10, 99};
+        Integer[] expected = {7, 13, 99};
+        assertArrayEquals(expected, find(array, new OddNumbersPredicate()));
+    }
+
+    @Test
+    void removeIfTest() {
+        Integer[] array = {7, -8, 10, -100, 13, -10, 99};
+        Integer[] expected = {-8, 10, -100, -10};
+        assertArrayEquals(expected, removeIf(array, new OddNumbersPredicate()));
     }
 }

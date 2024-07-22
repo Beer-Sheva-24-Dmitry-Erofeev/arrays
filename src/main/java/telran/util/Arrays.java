@@ -1,6 +1,7 @@
 package telran.util;
 
 import java.util.Comparator;
+import java.util.function.Predicate;
 
 public class Arrays {
 
@@ -23,7 +24,6 @@ public class Arrays {
 
     //creates new array with all elements from the given "ar" and
     //puts the given number at the given index
-    //TODO доработать тесты
     public static int[] insert(int[] ar, int index, int number) {
         int[] result = java.util.Arrays.copyOf(ar, ar.length + 1);
         System.arraycopy(ar, index, result, index + 1, ar.length - index);
@@ -117,6 +117,7 @@ public class Arrays {
 
         return resultingArray;
     }
+
     /*
     public static boolean isOneSwapToSorted(int[] array) {
         boolean result = false;
@@ -141,7 +142,6 @@ public class Arrays {
                     result = !(array[i] > array[i + 1] && array[i - 1] >= array[i + 2]);
                 }
             }
-            //TODO
             if (amountOfBumps == 2) {
                 for (int i = 0; i < array.length; i++) {
                     result = false;
@@ -156,8 +156,7 @@ public class Arrays {
         return result;
 
     }
-    */
-
+     */
     public static <T> void sort(T[] array, Comparator<T> comparator) {
         int length = array.length;
         boolean flSorted = false;
@@ -193,6 +192,36 @@ public class Arrays {
             }
             mid = (start + end) / 2;
         }
-        return start > end ? -(start - 1) : mid;
+        return start > end ? -(start + 1) : mid;
+    }
+
+    public static <T> int binarySearch(T[] array, T key) {
+        return binarySearch(array, key, (Comparator<T>) Comparator.naturalOrder());
+    }
+
+    // Method inserts an object (item) into a generic array of objects
+    public static <T> T[] insert(T[] array, int index, T item) {
+        T[] res = java.util.Arrays.copyOf(array, array.length + 1);
+        System.arraycopy(array, index, res, index + 1, array.length - index);
+        res[index] = item;
+        return res;
+    }
+
+    // Method finds object's in an array using the given predicate
+    // and returns all of them in an array
+    public static <T> T[] find(T[] array, Predicate<T> predicate) {
+        T[] result = java.util.Arrays.copyOf(array, 0);
+        for (int i = 0; i < array.length; i++) {
+            if (predicate.test(array[i])) {
+                result = insert(result, result.length, array[i]);
+            }
+        }
+        return result;
+    }
+
+    // Method removes all the object's (items) from the array matching the given predicate
+    public static <T> T[] removeIf(T[] array, Predicate<T> predicate) {
+        return find(array, predicate.negate());
+        // .negate() инвертирует результат предиката
     }
 }
