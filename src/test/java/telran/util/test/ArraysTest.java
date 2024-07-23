@@ -1,124 +1,157 @@
 package telran.util.test;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
-import static telran.util.Arrays.addElementToTheEnd;
+import static telran.util.Arrays.add;
 import static telran.util.Arrays.binarySearch;
 import static telran.util.Arrays.find;
 import static telran.util.Arrays.insert;
-import static telran.util.Arrays.insertAndKeepSorted;
+import static telran.util.Arrays.insertSorted;
+import static telran.util.Arrays.isOneSwap;
 import static telran.util.Arrays.remove;
 import static telran.util.Arrays.removeIf;
-import static telran.util.Arrays.searchBinary;
-import static telran.util.Arrays.searchLinear;
+import static telran.util.Arrays.search;
 import static telran.util.Arrays.sort;
-import static telran.util.Arrays.sortBubble;
-
-;
-
-;
 
 public class ArraysTest {
 
+    private static final int N_ELEMENTS = 20;
     int[] testArray = {10, 7, 12, -4, 13, 3, 14};
-    //int[] testArray2 = {10, 7, 12, -4, 13, 3, 14};
 
     @Test
-    void searchLinearTest() {
-        assertEquals(0, searchLinear(testArray, 10));
-        assertEquals(4, searchLinear(testArray, 13));
-        assertEquals(6, searchLinear(testArray, 14));
-        assertEquals(-1, searchLinear(testArray, 100));
+    void searchTest() {
+        assertEquals(0, search(testArray, 10));
+        assertEquals(4, search(testArray, 13));
+        assertEquals(6, search(testArray, 14));
+        assertEquals(-1, search(testArray, 100));
     }
 
     @Test
-    void addElementToTheEndTest() {
+    // testArray = {10, 7, 12, -4, 13, 3, 14}
+    void addTest() {
         int newNumber = 100;
         int[] expectedArray = {10, 7, 12, -4, 13, 3, 14, newNumber};
-        assertArrayEquals(expectedArray, addElementToTheEnd(testArray, newNumber));
+        assertArrayEquals(expectedArray, add(testArray, newNumber));
     }
 
     @Test
+    // testArray = {10, 7, 12, -4, 13, 3, 14}
     void insertTest() {
         int newNumber = 69;
-        int newNumberIndex = 5;
-        int newNumberIndex2 = 2;
-        int[] expectedArray = {10, 7, 12, -4, 13, 69, 3, 14};
-        int[] expectedArray2 = {10, 7, 69, 12, -4, 13, 3, 14};
-        assertArrayEquals(expectedArray, insert(testArray, newNumberIndex, newNumber));
-        assertArrayEquals(expectedArray2, insert(testArray, newNumberIndex2, newNumber));
+        int[] expected_0 = {newNumber, 10, 7, 12, -4, 13, 3, 14};
+        int[] expected_3 = {10, 7, 12, newNumber, -4, 13, 3, 14};
+        int[] expected_last = {10, 7, 12, -4, 13, 3, 14, newNumber};
+        assertArrayEquals(expected_0, insert(testArray, 0, newNumber));
+        assertArrayEquals(expected_3, insert(testArray, 3, newNumber));
+        assertArrayEquals(expected_last, insert(testArray, testArray.length, newNumber));
+        // Здесь проверка на вылет за границы массива. Почему даёт предупреждение "Throwable method result is ignored"?
+        assertThrowsExactly(ArrayIndexOutOfBoundsException.class, () -> insert(testArray, testArray.length + 1, newNumber));
+        assertThrowsExactly(ArrayIndexOutOfBoundsException.class, () -> insert(testArray, -1, newNumber));
     }
 
-    //В тестах лучше проверять начало, середину и конец. Доработать.
     @Test
+    // testArray = {10, 7, 12, -4, 13, 3, 14}
     void removeTest() {
-        int removeInIndex = 3;
-        int removeInIndex2 = 2;
-        int removeInIndex3 = 0;
-        int[] expectedArray = {10, 7, 12, 13, 3, 14};
-        int[] expectedArray2 = {10, 7, -4, 13, 3, 14};
-        int[] expectedArray3 = {7, 12, -4, 13, 3, 14};
-        assertArrayEquals(expectedArray, remove(testArray, removeInIndex));
-        assertArrayEquals(expectedArray2, remove(testArray, removeInIndex2));
-        assertArrayEquals(expectedArray3, remove(testArray, removeInIndex3));
+        int[] expected_0 = {7, 12, -4, 13, 3, 14};
+        int[] expected_3 = {10, 7, 12, 13, 3, 14};
+        int[] expected_last = {10, 7, 12, -4, 13, 3};
+        assertArrayEquals(expected_0, remove(testArray, 0));
+        assertArrayEquals(expected_3, remove(testArray, 3));
+        assertArrayEquals(expected_last, remove(testArray, testArray.length - 1));
+        // Здесь проверка на вылет за границы массива. Почему даёт предупреждение "Throwable method result is ignored"?
+        assertThrowsExactly(ArrayIndexOutOfBoundsException.class, () -> remove(testArray, testArray.length));
+        assertThrowsExactly(ArrayIndexOutOfBoundsException.class, () -> remove(testArray, -1));
     }
 
     @Test
-    void sortBubbleTest() {
-        int[] testArrayBubble = {10, 7, 12, -4, 13, 3, 14};
-        int[] expectedArray = {-4, 3, 7, 10, 12, 13, 14};
-        sortBubble(testArrayBubble);
-        assertArrayEquals(expectedArray, testArrayBubble);
+    // testArray = {10, 7, 12, -4, 13, 3, 14}
+    void sortTest() {
+        int[] testNumbers = java.util.Arrays.copyOf(testArray, testArray.length);
+        int[] expected = {-4, 3, 7, 10, 12, 13, 14};
+        sort(testNumbers);
+        assertArrayEquals(expected, testNumbers);
     }
 
     @Test
-    void searchBinaryTest() {
+    // Here we are testing "sort" with a random array
+    void sortTestRandomArray() {
+        int[] array = getRandomArray(N_ELEMENTS);
+        int limit = array.length - 1;
+        sort(array);
+        for (int i = 0; i < limit; i++) {
+            //TODO в этом месте тест выдаёт ошибку
+            assertTrue(array[i] <= array[i + 1]);
+        }
+    }
 
-        int lookingForIndex_0 = -90;
-        int lookingForIndex_10 = 101;
-        int lookingForIndex_8 = 69;
-        int lookingForWrongNumber = 999;
-        int[] testArrayBinary = {-90, -87, -6, 3, 32, 47, 55, 56, 69, 70, 101};
-
-        assertEquals(0, searchBinary(testArrayBinary, lookingForIndex_0));
-        assertEquals(10, searchBinary(testArrayBinary, lookingForIndex_10));
-        assertEquals(8, searchBinary(testArrayBinary, lookingForIndex_8));
-        assertEquals(-1, searchBinary(testArrayBinary, lookingForWrongNumber));
-
+    private int[] getRandomArray(int nElements) {
+        // Here we creating a random array
+        int[] res = new int[nElements];
+        Random random = new Random();
+        for (int i = 0; i < nElements; i++) {
+            res[i] = random.nextInt();
+        }
+        return res;
     }
 
     @Test
-    void insertAndKeepSortedTest() {
+    void binarySearchTest() {
 
-        int numberToInsert = 4;
-        int[] testArrayInsert = {-90, -87, -6, 3, 32, 47, 55, 56, 69, 70, 101};
-        int[] expectedArray = {-90, -87, -6, 3, 4, 32, 47, 55, 56, 69, 70, 101};
+        int Index_0 = -90;
+        int Index_10 = 101;
+        int Index_8 = 69;
+        int Index_11_Wrong = 999;
+        int Index_0_Wrong = -91;
+        int Index_6_Wrong = 50;
+        int[] testAr = {-90, -87, -6, 3, 32, 47, 55, 56, 69, 70, 101};
 
-        assertArrayEquals(expectedArray, insertAndKeepSorted(testArrayInsert, numberToInsert));
+        assertEquals(0, binarySearch(testAr, Index_0));
+        assertEquals(10, binarySearch(testAr, Index_10));
+        assertEquals(8, binarySearch(testAr, Index_8));
+        assertEquals(-12, binarySearch(testAr, Index_11_Wrong));
+        assertEquals(-1, binarySearch(testAr, Index_0_Wrong));
+        assertEquals(-7, binarySearch(testAr, Index_6_Wrong));
     }
 
-    /*@Test
-    // {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    void isOneSwapToSortedTest() {
-        // First two swapped, 1 bump
-        int[] testArrayTrue1 = {2, 1, 3, 4, 5, 6, 7, 8, 9, 10};
-        assertTrue(isOneSwapToSorted(testArrayTrue1));
-        // 1 bump first, special case
-        int[] testArrayFalse1 = {2, 3, 1, 4, 5, 6, 7, 8, 9, 10};
-        assertFalse(isOneSwapToSorted(testArrayFalse1));
-        // Last two swapped, 1 bump
-        int[] testArrayTrue2 = {1, 2, 3, 4, 5, 6, 7, 8, 10, 9};
-        assertTrue(isOneSwapToSorted(testArrayTrue2));
-        // 1 bump last, special case
-        int[] testArrayFalse2 = {1, 2, 3, 4, 5, 6, 7, 10, 8, 9};
-        assertFalse(isOneSwapToSorted(testArrayFalse2));
-        // Two neighbours swapped, 1 bump
-        int[] testArrayTrue3 = {1, 2, 3, 4, 6, 5, 7, 8, 9, 10};
-        assertTrue(isOneSwapToSorted(testArrayTrue3));
+    @Test
+    void insertSortedTest() {
+        int[] expected = {5, 10, 10, 20, 25, 30, 40, 50, 55};
+        int[] insertedNumbers = {10, 55, 5, 25};
+        int[] actual = {10, 20, 30, 40, 50};
+        for (int i = 0; i < insertedNumbers.length; i++) {
+            actual = insertSorted(actual, insertedNumbers[i]);
+        }
+        assertArrayEquals(expected, actual);
     }
-     */
+
+    @Test
+    void isOneSwapTest() {
+
+        int[] arTrue1 = {1, 2, 10, 4, 7, 3};
+        int[] arTrue2 = {1, 2, 10, 4, 4, 20};
+        int[] arTrue3 = {1, 2, 10, 4, 20, 30};
+        int[] arTrue4 = {10, 2, 1, 10, 20, 30};
+        int[] arFalse1 = {20, 3, 3, 10, 20, 30};
+        int[] arFalse2 = {1, 2, 10, 4, 7, 5};
+        int[] arFalse3 = {1, 2, 3, 4, 5, 10};
+        int[][] arraysTrue = {arTrue1, arTrue2, arTrue3, arTrue4};
+        int[][] arraysFalse = {arFalse1, arFalse2, arFalse3};
+
+        for (int i = 0; i < arraysTrue.length; i++) {
+            assertTrue(isOneSwap(arraysTrue[i]), "" + (i + 1));
+        }
+        for (int i = 0; i < arraysFalse.length; i++) {
+            assertFalse(isOneSwap(arraysFalse[i]), "" + (i + 1));
+        }
+    }
+
     @Test
     void sortAnyTypeTest() {
         String[] testStrings = {"lmn", "cfta", "w", "aa"};
@@ -131,7 +164,7 @@ public class ArraysTest {
     }
 
     @Test
-    void binarySearchAnyTypeTest() {
+    void binarySearchObjectTest() {
         String[] testASCII = {"aa", "cfta", "lmn", "w"};
         assertEquals(0, binarySearch(testASCII, "aa", new ComparatorASCII()));
         assertEquals(3, binarySearch(testASCII, "w", new ComparatorASCII()));
@@ -150,6 +183,13 @@ public class ArraysTest {
         assertEquals(6, binarySearch(testIntegers, 69, new ComparatorInteger()));
         assertEquals(2, binarySearch(testIntegers, 0, new ComparatorInteger()));
         assertEquals(-6, binarySearch(testIntegers, 2, new ComparatorInteger()));
+    }
+
+    @Test
+    void findTest() {
+        Integer[] array = {7, -8, 10, -100, 13, -10, 99};
+        Integer[] expected = {7, 13, 99};
+        assertArrayEquals(expected, find(array, new OddNumbersPredicate()));
     }
 
     @Test
@@ -176,13 +216,6 @@ public class ArraysTest {
         Integer[] expected = {-100, -10, -8, 10, 99, 13, 7};
         sort(array, new EvenOddComparator());
         assertArrayEquals(expected, array);
-    }
-
-    @Test
-    void findTest() {
-        Integer[] array = {7, -8, 10, -100, 13, -10, 99};
-        Integer[] expected = {7, 13, 99};
-        assertArrayEquals(expected, find(array, new OddNumbersPredicate()));
     }
 
     @Test
