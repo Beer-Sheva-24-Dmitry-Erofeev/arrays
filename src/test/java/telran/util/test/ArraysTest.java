@@ -15,10 +15,12 @@ import static telran.util.Arrays.find;
 import static telran.util.Arrays.insert;
 import static telran.util.Arrays.insertSorted;
 import static telran.util.Arrays.isOneSwap;
+import static telran.util.Arrays.matchesRules;
 import static telran.util.Arrays.remove;
 import static telran.util.Arrays.removeIf;
 import static telran.util.Arrays.search;
 import static telran.util.Arrays.sort;
+import telran.util.CharacterRule;
 
 public class ArraysTest {
 
@@ -86,7 +88,6 @@ public class ArraysTest {
         int limit = array.length - 1;
         sort(array);
         for (int i = 0; i < limit; i++) {
-            //TODO в этом месте тест выдаёт ошибку
             assertTrue(array[i] <= array[i + 1]);
         }
     }
@@ -157,9 +158,9 @@ public class ArraysTest {
         String[] testStrings = {"lmn", "cfta", "w", "aa"};
         String[] expectedASCII = {"aa", "cfta", "lmn", "w"};
         String[] expectedLength = {"w", "aa", "lmn", "cfta"};
-        sort(testStrings, new ComparatorASCII());
+        sort(testStrings, (a, b) -> a.compareTo(b));
         assertArrayEquals(expectedASCII, testStrings);
-        sort(testStrings, new ComparatorLength());
+        sort(testStrings, (a, b) -> Integer.compare(a.length(), b.length()));
         assertArrayEquals(expectedLength, testStrings);
     }
 
@@ -179,7 +180,7 @@ public class ArraysTest {
         assertEquals(-5, binarySearch(testLength, "     ", new ComparatorLength()));
 
         Integer[] testIntegers = {-7, -4, 0, 1, 1, 5, 69};
-        assertEquals(0, binarySearch(testIntegers, -7, new ComparatorInteger()));
+        assertEquals(0, binarySearch(testIntegers, -7, Integer::compare));
         assertEquals(6, binarySearch(testIntegers, 69, new ComparatorInteger()));
         assertEquals(2, binarySearch(testIntegers, 0, new ComparatorInteger()));
         assertEquals(-6, binarySearch(testIntegers, 2, new ComparatorInteger()));
@@ -189,7 +190,7 @@ public class ArraysTest {
     void findTest() {
         Integer[] array = {7, -8, 10, -100, 13, -10, 99};
         Integer[] expected = {7, 13, 99};
-        assertArrayEquals(expected, find(array, new OddNumbersPredicate()));
+        assertArrayEquals(expected, find(array, n -> n % 2 != 0));
     }
 
     @Test
@@ -214,7 +215,11 @@ public class ArraysTest {
     void evenOddSortingTest() {
         Integer[] array = {7, -8, 10, -100, 13, -10, 99};
         Integer[] expected = {-100, -10, -8, 10, 99, 13, 7};
-        sort(array, new EvenOddComparator());
+        sort(array, (arg0, arg1) -> {
+            boolean firstEven = arg0 % 2 == 0;
+            boolean secondEven = arg1 % 2 == 0;
+            return firstEven ? (secondEven ? arg0.compareTo(arg1) : -1) : (secondEven ? 1 : -(arg0.compareTo(arg1)));
+        });
         assertArrayEquals(expected, array);
     }
 
@@ -222,6 +227,66 @@ public class ArraysTest {
     void removeIfTest() {
         Integer[] array = {7, -8, 10, -100, 13, -10, 99};
         Integer[] expected = {-8, 10, -100, -10};
-        assertArrayEquals(expected, removeIf(array, new OddNumbersPredicate()));
+        assertArrayEquals(expected, removeIf(array, n -> n % 2 != 0));
+    }
+
+    @Test
+    void matchesRulesTest() {
+        CharacterRule rule1_ok = new CharacterRule(
+                true,
+                a -> Character.isUpperCase(a),
+                "at least one capital letter");
+        CharacterRule rule2_ok = new CharacterRule(
+                true,
+                a -> Character.isLowerCase(a),
+                "at least one lowercase letter");
+        CharacterRule rule3_ok = new CharacterRule(
+                true,
+                a -> Character.isDigit(a),
+                "at least one digit");
+        CharacterRule rule4_ok = new CharacterRule(
+                true,
+                a -> a == '.',
+                "at least one dot");
+        CharacterRule[] rulesOk = {rule1_ok, rule2_ok, rule3_ok, rule4_ok};
+
+        CharacterRule rule1_notOk = new CharacterRule(
+                false,
+                a -> Character.isWhitespace(a),
+                "spaces are disallowed");
+
+        CharacterRule[] rulesNotOk = {rule1_notOk};
+
+        String fine = "";
+        char[] match1 = {'a', 'n', '*', 'G', '.', '.', '1'};
+        assertEquals(fine, matchesRules(match1, rulesOk, rulesNotOk));
+
+        String noSpace = "spaces are disallowed. ";
+        char[] miss1_noSpace = {'a', 'n', '*', 'G', '.', '.', '1', ' '};
+        assertEquals(noSpace, matchesRules(miss1_noSpace, rulesOk, rulesNotOk));
+
+        String noCapital = "at least one capital letter. ";
+        char[] miss2_noCapital = {'a', 'n', '*', '.', '.', '1'};
+        assertEquals(noCapital, matchesRules(miss2_noCapital, rulesOk, rulesNotOk));
+
+        String noDigit = "at least one digit. ";
+        char[] miss3_noDigit = {'a', 'n', '*', 'G', '.', '.'};
+        assertEquals(noDigit, matchesRules(miss3_noDigit, rulesOk, rulesNotOk));
+
+        String noDot = "at least one dot. ";
+        char[] miss4_noDot = {'a', 'n', '*', 'G', 'u', '1', '1'};
+        assertEquals(noDot, matchesRules(miss4_noDot, rulesOk, rulesNotOk));
+
+        String noSpaceNoCapital = "at least one capital letter. spaces are disallowed. ";
+        char[] miss5_noSpaceNoCapital = {'a', ' ', 'n', '*', '.', '.', '1'};
+        assertEquals(noSpaceNoCapital, matchesRules(miss5_noSpaceNoCapital, rulesOk, rulesNotOk));
+
+        String noDigitNoDot = "at least one digit. at least one dot. ";
+        char[] miss6_noDigitNoDot = {'a', 'n', '*', 'G', 't', 'g'};
+        assertEquals(noDigitNoDot, matchesRules(miss6_noDigitNoDot, rulesOk, rulesNotOk));
+
+        String balagan = "at least one capital letter. at least one lowercase letter. at least one digit. at least one dot. spaces are disallowed. ";
+        char[] miss7_balagan = {'*', '*', '*', ' ', '*', '*', '*'};
+        assertEquals(balagan, matchesRules(miss7_balagan, rulesOk, rulesNotOk));
     }
 }

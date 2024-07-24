@@ -205,4 +205,40 @@ public class Arrays {
         // .negate() инвертирует результат предиката
     }
 
+    public static String matchesRules(char[] chars, CharacterRule[] mustBeRules, CharacterRule[] mustNotBeRules) {
+
+        String result = "";
+
+        // Смотрим правила по одному
+        int i = 0;
+        while (i < mustBeRules.length) {
+            // Перебираем правило по массиву до конца
+            int j = 0;
+            while (j < chars.length && !mustBeRules[i].test(chars[j])) {
+                j++;
+                // Если мы прошли массив до конца, то нужного элемента нет. Выдаём текст ошибки
+                if (j == chars.length) {
+                    result += mustBeRules[i].getErrorMessage() + ". ";
+                }
+            }
+            i++;
+        }
+
+        // Смотрим запреты по одному
+        i = 0;
+        while (i < mustNotBeRules.length) {
+            // Перебираем правило по массиву до конца
+            int j = 0;
+            while (j < chars.length && !mustNotBeRules[i].test(chars[j])) {
+                j++;
+            }
+            // Если не дошли до конца массива, то есть ошибка
+            if (j < chars.length) {
+                result += mustNotBeRules[i].getErrorMessage() + ". ";
+            }
+            i++;
+        }
+        return result;
+    }
+
 }
